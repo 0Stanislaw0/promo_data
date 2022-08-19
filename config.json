@@ -1,0 +1,17 @@
+{
+"output_directory": "out", 
+"categories": ["Рыбы"], 
+"delay_range_s" : {
+    "min": 3,
+    "max": 5
+  },
+"max_retries": 3,
+"headers": { "user-agent": "Mozilla/5.0 (compatible; MSIE 10.0;Windows NT 6.1; WOW64; Trident/6.0)",
+              "accept": "*/*"
+            },
+"logs_dir" : "logs", 
+"restart": {
+    "restart_count": 3,
+    "interval_m": 0.2
+  }
+}
