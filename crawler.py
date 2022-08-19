@@ -1,24 +1,19 @@
 from typing import List, Dict, Any
 import soupsieve as sv
 from bs4 import BeautifulSoup, Tag
-import json
 import time
 import random
-import os
 import httpx
 from loguru import logger
 
 
-with open("config.json", "r") as js:
-    data = json.load(js)
-    DELAY_RANGE_S = data.get("delay_range_s")
-    HEADERS = data.get("headers")
-    MAX_RETRIES = data.get("max_retries")
-
 class Crawler:
-    def __init__(self) -> None:
-        self.RNG = range(DELAY_RANGE_S.get("min"), 
-                         DELAY_RANGE_S.get("max")
+
+    def __init__(self, headers: Dict[str, str], max_retries: int, delay_range: Dict[str, int]) -> None:
+        self.HEADERS = headers
+        self.MAX_RETRIES = max_retries
+        self.RNG = range(delay_range.get("min"), 
+                         delay_range.get("max")
                          )
 
         self.URL = 'https://zootovary.ru'
@@ -83,10 +78,11 @@ class Crawler:
                         temp.append(i["href"])
             self.product_links.append(temp)
 
-    def souped(self, url):
+    @logger.catch
+    def souped(self,url):
         count = 0
-        while MAX_RETRIES > count:
-            req = httpx.get(url, params=HEADERS)
+        while self.MAX_RETRIES > count:
+            req = httpx.get(url, params=self.HEADERS)
             if req.status_code == 200:
                 soup = BeautifulSoup(req.text, 'html.parser')
                 return soup

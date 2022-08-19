@@ -1,6 +1,6 @@
 {
 "output_directory": "out", 
-"categories": ["Рыбы"], 
+"categories": ["Грызуны"], 
 "delay_range_s" : {
     "min": 3,
     "max": 5

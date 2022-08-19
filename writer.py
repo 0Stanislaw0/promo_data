@@ -5,12 +5,11 @@ from loguru import logger
 
 
 class WriterCSV:
-    def __init__(self) -> None:
+    
+    def __init__(self, directory: str) -> None:
         self.index: int = 1
-        with open("config.json", "r") as js:
-            data = json.load(js)
-            cwd = os.getcwd()
-            targetPath = os.path.join(cwd, data.get("output_directory"))
+        cwd = os.getcwd()
+        targetPath = os.path.join(cwd, directory)
         self.targetPath = targetPath
         while not os.path.exists(targetPath):
             os.mkdir(targetPath)

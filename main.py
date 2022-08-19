@@ -2,6 +2,7 @@ import json
 import time
 import random
 import os
+from typing import List, Union, Dict
 from datetime import datetime
 from loguru import logger
 from item import Item
@@ -11,9 +12,13 @@ from crawler import Crawler
 
 with open("config.json", "r") as js:
     data = json.load(js)
-    CATEGORIES = data.get("categories")
-    RESTART_COUNT = data.get("restart").get("restart_count")
-    INTERVAL_M = data.get("restart").get("interval_m")
+    CATEGORIES: List[str] = data.get("categories")
+    RESTART_COUNT: int = data.get("restart").get("restart_count")
+    INTERVAL_M: Union[int, float] = data.get("restart").get("interval_m")
+    HEADERS: Dict[str, str] = data.get("headers")
+    OUTPUT_DIRECTORY: str =  data.get("output_directory")
+    MAX_RETRIES: int = data.get("max_retries")
+    DELAY_RANGE_S: Dict[str, int] = data.get("delay_range_s")
     cwd = os.getcwd()
     targetPath = os.path.join(cwd, data.get("logs_dir"))
     while not os.path.exists(targetPath):
@@ -26,8 +31,8 @@ logger.add(targetFile, format="{time} {level} {message}", level="DEBUG",
 
 @logger.catch
 def main():
-    crawler = Crawler()
-    writer_CSV = WriterCSV()
+    crawler = Crawler(HEADERS, MAX_RETRIES, DELAY_RANGE_S)
+    writer_CSV = WriterCSV(OUTPUT_DIRECTORY)
     logger.debug("получаем категори ")
     crawler.get_categories()
     logger.debug("получаем подкатегории")
@@ -53,7 +58,7 @@ def main():
                 time.sleep(random.choice(crawler.RNG))
                 if value.get("href") in link:
                     logger.debug(f"обрабатывается {key}, {link}")
-                    item = Item(crawler.URL+link)
+                    item = Item(crawler.URL+link, HEADERS, MAX_RETRIES)
                     item.get_info()
                     for sub in value.get("subcategories"):
                         for category in sub.keys():
@@ -67,6 +72,7 @@ if "__main__" == __name__:
     while RESTART_COUNT > count:
         try:
             main()
+            break
         except:
             time.sleep(INTERVAL_M*60)
             count += 1

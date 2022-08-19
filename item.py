@@ -1,18 +1,16 @@
-from typing import List
+from typing import List, Dict
 from loguru import logger
 import soupsieve as sv
 from bs4 import BeautifulSoup, Tag
 import httpx
-import json
 
-with open("config.json", "r") as js:
-    data = json.load(js)
-    HEADERS = data.get("headers")
-    MAX_RETRIES = data.get("max_retries")
-   
+
 class Item:
-    def __init__(self, url: str) -> None:
+
+    def __init__(self, url: str, headers: Dict[str, str], max_retries: int) -> None:
         self.url = url
+        self.HEADERS = headers
+        self.MAX_RETRIES = max_retries
         self.soup: List[Tag] = []
         self.info: BeautifulSoup = ""
         self.articul: List[str] = []
@@ -154,8 +152,8 @@ class Item:
     @logger.catch
     def souped(self,url):
         count = 0
-        while MAX_RETRIES > count:
-            req = httpx.get(url, params=HEADERS)
+        while self.MAX_RETRIES > count:
+            req = httpx.get(url, params=self.HEADERS)
             if req.status_code == 200:
                 soup = BeautifulSoup(req.text, 'html.parser')
                 return soup
