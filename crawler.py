@@ -13,13 +13,14 @@ with open("config.json", "r") as js:
     data = json.load(js)
     DELAY_RANGE_S = data.get("delay_range_s")
     HEADERS = data.get("headers")
-
+    MAX_RETRIES = data.get("max_retries")
 
 class Crawler:
     def __init__(self) -> None:
         self.RNG = range(DELAY_RANGE_S.get("min"), 
                          DELAY_RANGE_S.get("max")
                          )
+
         self.URL = 'https://zootovary.ru'
         self.ids: List[Tag] = []
         self.soup: BeautifulSoup = None
@@ -83,10 +84,15 @@ class Crawler:
             self.product_links.append(temp)
 
     def souped(self, url):
-        req = httpx.get(url, params=HEADERS)
-        if req.status_code == 200:
-            soup = BeautifulSoup(req.text, 'html.parser')
-        else:
-            raise ValueError(req.status_code, url)
-        return soup
+        count = 0
+        while MAX_RETRIES > count:
+            req = httpx.get(url, params=HEADERS)
+            if req.status_code == 200:
+                soup = BeautifulSoup(req.text, 'html.parser')
+                return soup
+            else:
+                count+=1
+                logger.error("BAD STATUS CODE")
+            
+            
 

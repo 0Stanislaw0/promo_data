@@ -8,8 +8,8 @@ import json
 with open("config.json", "r") as js:
     data = json.load(js)
     HEADERS = data.get("headers")
-    
-
+    MAX_RETRIES = data.get("max_retries")
+   
 class Item:
     def __init__(self, url: str) -> None:
         self.url = url
@@ -153,11 +153,14 @@ class Item:
     
     @logger.catch
     def souped(self,url):
-        """Get soup from url"""
-        req = httpx.get(url, params=HEADERS)
-        if req.status_code == 200:
-            soup = BeautifulSoup(req.text, 'html.parser')
-        else:
-            raise ValueError(req.status_code, url)
-        return soup
+        count = 0
+        while MAX_RETRIES > count:
+            req = httpx.get(url, params=HEADERS)
+            if req.status_code == 200:
+                soup = BeautifulSoup(req.text, 'html.parser')
+                return soup
+            else:
+                count+=1
+                logger.error("BAD STATUS CODE")
+            
 
